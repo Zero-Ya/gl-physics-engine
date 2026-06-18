@@ -7,15 +7,30 @@
 #include <glm/gtc/type_ptr.hpp>
 
 #include <iostream>
+#include <memory>
+#include <vector>
 
 // Core includes
 #include "core/application.h"
+#include "core/time.h"
 
 // UI
 #include "ui/imgui_layer.h"
 
 // Rendering
 #include "rendering/utils/shader.h"
+#include "rendering/2D/debug_draw.h"
+
+// Physics
+#include "physics/2D/integrator2d.h"
+
+// Components
+#include "components/2D/rigidbody2d.h"
+#include "components/2D/transform2d.h"
+
+// Scene
+#include "scene/game_object.h"
+
 
 void processInput(GLFWwindow* window);
 
@@ -27,63 +42,64 @@ int main()
 {
     // Init app
     Application app("Physics Engine", SCR_WIDTH, SCR_HEIGHT);
+    Time timer;
 
-    // Shaders and buffers
-    Shader basicShader("assets/shaders/2d_basic_shader.vs", "assets/shaders/2d_basic_shader.fs");
+    // Shader
+    Shader debugShader("assets/shaders/debug.vert", "assets/shaders/debug.frag");
 
-    float vertices[] = {
-        // positions         // colors
-         0.5f, -0.5f, 0.0f,  1.0f, 0.0f, 0.0f,  // bottom right
-        -0.5f, -0.5f, 0.0f,  0.0f, 1.0f, 0.0f,  // bottom left
-         0.0f,  0.5f, 0.0f,  0.0f, 0.0f, 1.0f   // top 
-    };
+    DebugDraw debugRenderer(debugShader);
 
-    unsigned int VBO, VAO;
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
-    // Bind the Vertex Array Object first, then bind and set vertex buffer(s), and then configure vertex attributes(s).
-    glBindVertexArray(VAO);
+    glm::mat4 projection = glm::ortho(-8.0f, 8.0f, -4.5f, 4.5f, -1.0f, 1.0f);
 
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    std::vector<std::unique_ptr<GameObject>> entities;
+    std::unique_ptr box = std::make_unique<GameObject>(1, "Box");
 
-    // Position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0);
-    // Color attribute
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
-    glEnableVertexAttribArray(1);
+    box->addComponent<Transform2D>(glm::vec2(0.0f, 3.0f));
+
+    auto* rb = box->addComponent<RigidBody2D>(1.0f);
+    rb->velocity = glm::vec2(1.5f, 0.0f);
+
+    entities.push_back(std::move(box));
+
+    glm::vec2 gravity(0.0f, -9.81f);
+
+    // Buffers and bindings
 
     // ImGui init
     ImGuiLayer imGuiLayer(app.getWindow());
 
     // Uniform data
-    float size = 1.0f;
-    glm::vec4 color = { 1.0f, 1.0f, 1.0f, 1.0f };
-    basicShader.use();
-    basicShader.setFloat("size", size);
-    basicShader.setVec4("color", color);
 
     // Render loop
     while (app.isRunning())
     {
+        timer.update();
+        float dt = timer.getDeltaTime();
+
+        // To prevent massive physics jumps during lag spikes
+        if (dt > 0.1f) dt = 0.1f;
+
         // Input
         processInput(app.getWindow());
 
-        // Render
+        // Physics phase
+        for (auto& obj : entities) {
+            Integrator2D::integrate(*obj, dt, gravity);
+        }
+
+        // Render the scene
         app.clearScreen(0.2f, 0.3f, 0.3f, 1.0f);
 
-        // Render the triangle
-        basicShader.use();
-        basicShader.setFloat("size", size);
-        basicShader.setVec4("color", color);
-
-        glBindVertexArray(VAO);
-        glDrawArrays(GL_TRIANGLES, 0, 3);
+        for (auto& obj : entities) {
+            auto* tf = obj->getComponent<Transform2D>();
+            if (tf) {
+                debugRenderer.drawBox(tf->position, glm::vec2(1.0f, 1.0f), glm::vec3(0.0f, 1.0f, 0.0f), projection);
+            }
+        }
 
         // ImGui render
         imGuiLayer.beginFrame();
-        imGuiLayer.render(size, color);
+        //imGuiLayer.render(size, color);
         imGuiLayer.endFrame();
 
         // GLFW: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
