@@ -14,11 +14,6 @@ struct RigidBody2D : public Component {
 
 	void setMass(float m) {
 		mass = m;
-		if (mass > 0.0f) {
-			inverseMass = 1.0f / mass;
-		}
-		else {
-			inverseMass = 0.0f;
-		}
+		inverseMass = (m > 0.0f) ? 1.0f / m : 0.0f;
 	}
 };
