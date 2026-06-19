@@ -23,6 +23,7 @@
 
 // Physics
 #include "physics/2D/integrator2d.h"
+#include "physics/2D/boundary_solver2d.h"
 
 // Components
 #include "components/2D/rigidbody2d.h"
@@ -57,18 +58,17 @@ int main()
     box->addComponent<Transform2D>(glm::vec2(0.0f, 3.0f));
 
     auto* rb = box->addComponent<RigidBody2D>(1.0f);
-    rb->velocity = glm::vec2(1.5f, 0.0f);
+    rb->velocity = glm::vec2(10.0f, 0.0f);
 
     entities.push_back(std::move(box));
 
     glm::vec2 gravity(0.0f, -9.81f);
 
-    // Buffers and bindings
+    glm::vec2 minWorldBounds(-8.0f, -4.5f); // Bottom-Left Corner
+    glm::vec2 maxWorldBounds(8.0f, 4.5f);   // Top-Right Corner
 
     // ImGui init
     ImGuiLayer imGuiLayer(app.getWindow());
-
-    // Uniform data
 
     // Render loop
     while (app.isRunning())
@@ -84,11 +84,18 @@ int main()
 
         // Physics phase
         for (auto& obj : entities) {
-            Integrator2D::integrate(*obj, dt, gravity);
+            Integrator2D::integrate(obj.get(), dt, gravity);
+        }
+
+        // Collision phase
+        for (auto& obj : entities) {
+            BoundarySolver2D::resolveCollision(obj.get(), minWorldBounds, maxWorldBounds);
         }
 
         // Render the scene
         app.clearScreen(0.2f, 0.3f, 0.3f, 1.0f);
+
+        //debugRenderer.drawBox(glm::vec2(0.0f, 0.0f), glm::vec2(16.0f, 9.0f), glm::vec3(1.0f, 0.0f, 0.0f), projection);
 
         for (auto& obj : entities) {
             auto* tf = obj->getComponent<Transform2D>();
