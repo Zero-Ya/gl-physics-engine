@@ -67,4 +67,8 @@ void Application::initWindow(const char* title)
         std::cout << "Failed to initialize GLAD" << std::endl;
         exit(EXIT_FAILURE);
     }
+
+    // OpenGL global state config
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }

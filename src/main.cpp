@@ -24,6 +24,7 @@
 // Physics
 #include "physics/2D/integrator2d.h"
 #include "physics/2D/boundary_solver2d.h"
+#include "physics/2D/collision_solver2d.h"
 
 // Components
 #include "components/2D/rigidbody2d.h"
@@ -50,22 +51,44 @@ int main()
 
     DebugDraw debugRenderer(debugShader);
 
-    glm::mat4 projection = glm::ortho(-8.0f, 8.0f, -4.5f, 4.5f, -1.0f, 1.0f);
-
+    // Hardcoded for now...
     std::vector<std::unique_ptr<GameObject>> entities;
-    std::unique_ptr box = std::make_unique<GameObject>(1, "Box");
+    std::unique_ptr box1 = std::make_unique<GameObject>(1, "Box1");
+    std::unique_ptr box2 = std::make_unique<GameObject>(2, "Box2");
+    std::unique_ptr box3 = std::make_unique<GameObject>(3, "Box3");
+    std::unique_ptr box4 = std::make_unique<GameObject>(4, "Box4");
+    std::unique_ptr box5 = std::make_unique<GameObject>(5, "Box5");
 
-    box->addComponent<Transform2D>(glm::vec2(0.0f, 3.0f));
 
-    auto* rb = box->addComponent<RigidBody2D>(1.0f);
-    rb->velocity = glm::vec2(10.0f, 0.0f);
+    box1->addComponent<Transform2D>(glm::vec2(0.0f, 1.0f));
+    box2->addComponent<Transform2D>(glm::vec2(0.0f, 2.0f));
+    box3->addComponent<Transform2D>(glm::vec2(0.0f, 3.0f));
+    box4->addComponent<Transform2D>(glm::vec2(0.0f, 4.0f));
+    box5->addComponent<Transform2D>(glm::vec2(0.0f, 5.0f));
 
-    entities.push_back(std::move(box));
+
+    auto* rb1 = box1->addComponent<RigidBody2D>(1.0f);
+    rb1->velocity = glm::vec2(10.0f, 0.0f);
+
+    auto* rb2 = box2->addComponent<RigidBody2D>(1.0f);
+    rb2->velocity = glm::vec2(9.0f, 0.0f);
+
+    auto* rb3 = box3->addComponent<RigidBody2D>(1.0f);
+    rb2->velocity = glm::vec2(8.0f, 0.0f);
+
+    auto* rb4 = box4->addComponent<RigidBody2D>(1.0f);
+    rb4->velocity = glm::vec2(12.0f, 0.0f);
+
+    auto* rb5 = box5->addComponent<RigidBody2D>(1.0f);
+    rb5->velocity = glm::vec2(7.5f, 0.0f);
+
+    entities.push_back(std::move(box1));
+    entities.push_back(std::move(box2));
+    entities.push_back(std::move(box3));
+    entities.push_back(std::move(box4));
+    entities.push_back(std::move(box5));
 
     glm::vec2 gravity(0.0f, -9.81f);
-
-    glm::vec2 minWorldBounds(-8.0f, -4.5f); // Bottom-Left Corner
-    glm::vec2 maxWorldBounds(8.0f, 4.5f);   // Top-Right Corner
 
     // ImGui init
     ImGuiLayer imGuiLayer(app.getWindow());
@@ -73,6 +96,15 @@ int main()
     // Render loop
     while (app.isRunning())
     {
+        // For maintaining aspect ratio
+        int dynaWidth, dynaHeight;
+        glfwGetFramebufferSize(app.getWindow(), &dynaWidth, &dynaHeight);
+        if (dynaHeight == 0) dynaHeight = 1;
+        float aspect = (float)dynaWidth / (float)dynaHeight;
+        float orthoHeight = 4.5f;
+        float orthoWidth = orthoHeight * aspect;
+        glm::mat4 projection = glm::ortho(-orthoWidth, orthoWidth, -orthoHeight, orthoHeight, -1.0f, 1.0f);
+
         timer.update();
         float dt = timer.getDeltaTime();
 
@@ -82,20 +114,28 @@ int main()
         // Input
         processInput(app.getWindow());
 
-        // Physics phase
+        // Movement
         for (auto& obj : entities) {
             Integrator2D::integrate(obj.get(), dt, gravity);
         }
 
-        // Collision phase
+        // Object-object collision
+        for (size_t i = 0; i < entities.size(); ++i) {
+            for (size_t j = i + 1; j < entities.size(); ++j) {
+                CollisionSolver2D::resolveCircleCollision(entities[i].get(), entities[j].get());
+            }
+        }
+
+        glm::vec2 minWorldBounds(-orthoWidth, -orthoHeight);
+        glm::vec2 maxWorldBounds(orthoWidth, orthoHeight);
+
+        // Boundary collision
         for (auto& obj : entities) {
             BoundarySolver2D::resolveCollision(obj.get(), minWorldBounds, maxWorldBounds);
         }
 
         // Render the scene
         app.clearScreen(0.2f, 0.3f, 0.3f, 1.0f);
-
-        //debugRenderer.drawBox(glm::vec2(0.0f, 0.0f), glm::vec2(16.0f, 9.0f), glm::vec3(1.0f, 0.0f, 0.0f), projection);
 
         for (auto& obj : entities) {
             auto* tf = obj->getComponent<Transform2D>();

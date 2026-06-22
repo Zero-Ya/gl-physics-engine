@@ -11,6 +11,6 @@ public:
 	void drawBox(const glm::vec2& position, const glm::vec2& size, const glm::vec3& color, const glm::mat4& projection);
 
 private:
-	unsigned int m_VBO, m_VAO;
+	unsigned int m_VBO, m_VAO, m_EBO;
 	Shader& m_Shader;
 };
