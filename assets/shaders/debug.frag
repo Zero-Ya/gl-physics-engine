@@ -10,7 +10,7 @@ void main() {
 
     float distanceSq = dot(uv, uv);
 
-    float radius = 0.8;
+    float radius = 1.0;
     float thickness = 0.02;
 
     float alpha = 1.0 - smoothstep(radius * radius, (radius + thickness) * (radius + thickness), distanceSq);

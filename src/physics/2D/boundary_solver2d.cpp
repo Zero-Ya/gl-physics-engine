@@ -10,7 +10,7 @@ void BoundarySolver2D::resolveCollision(GameObject* obj, const glm::vec2& minBou
 	if (!tf || !rb) return;
 
 	float radius = 0.5f;
-	float restitution = 1.0f; // Bounciness
+	float restitution = 0.8f; // Bounciness
 
     // X Axis collision
     // Right wall

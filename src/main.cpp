@@ -59,13 +59,11 @@ int main()
     std::unique_ptr box4 = std::make_unique<GameObject>(4, "Box4");
     std::unique_ptr box5 = std::make_unique<GameObject>(5, "Box5");
 
-
     box1->addComponent<Transform2D>(glm::vec2(0.0f, 1.0f));
     box2->addComponent<Transform2D>(glm::vec2(0.0f, 2.0f));
     box3->addComponent<Transform2D>(glm::vec2(0.0f, 3.0f));
     box4->addComponent<Transform2D>(glm::vec2(0.0f, 4.0f));
     box5->addComponent<Transform2D>(glm::vec2(0.0f, 5.0f));
-
 
     auto* rb1 = box1->addComponent<RigidBody2D>(1.0f);
     rb1->velocity = glm::vec2(10.0f, 0.0f);
