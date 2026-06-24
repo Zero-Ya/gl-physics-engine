@@ -17,9 +17,8 @@ Application::Application(const char* title, int width, int height)
     initWindow(title);
 }
 
-Application::~Application()
-{
-    glfwTerminate();
+Application::~Application() {
+    close();
 }
 
 bool Application::isRunning() const
@@ -71,4 +70,8 @@ void Application::initWindow(const char* title)
     // OpenGL global state config
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+}
+
+void Application::close() {
+    glfwTerminate();
 }

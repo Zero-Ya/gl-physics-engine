@@ -5,6 +5,8 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/gtx/string_cast.hpp>
 
 #include <iostream>
 #include <memory>
@@ -13,6 +15,7 @@
 // Core includes
 #include "core/application.h"
 #include "core/time.h"
+#include "core/input.h"
 
 // UI
 #include "ui/imgui_layer.h"
@@ -40,23 +43,26 @@ void processInput(GLFWwindow* window);
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
+glm::vec2 screenToWorld(glm::vec2 pos, int windowWidth, int windowHeight, float orthoHeight);
+
 int main()
 {
-    // Init app
+    // Init app and core systems
     Application app("Physics Engine", SCR_WIDTH, SCR_HEIGHT);
     Time timer;
+    Input::init(app.getWindow());
 
     // Shader
     Shader debugShader("assets/shaders/debug.vert", "assets/shaders/debug.frag");
 
     DebugDraw debugRenderer(debugShader);
 
+    // Create scene
     Scene scene;
-
-    auto ball1 = scene.createEntity("Ball1", glm::vec2(0.0f, 1.0f), glm::vec2(10.0f, 0.0f));
-    auto ball2 = scene.createEntity("Ball2", glm::vec2(0.0f, 2.0f), glm::vec2(9.0f, 0.0f));
-    auto ball3 = scene.createEntity("Ball3", glm::vec2(0.0f, 3.0f), glm::vec2(8.0f, 0.0f));
-    auto ball4 = scene.createEntity("Ball4", glm::vec2(0.0f, 4.0f), glm::vec2(7.0f, 0.0f));
+    auto ball1 = scene.createEntity("Ball1", glm::vec2(2.0f, -1.0f), glm::vec2(10.0f, 1.0f));
+    auto ball2 = scene.createEntity("Ball2", glm::vec2(-2.0f, 2.0f), glm::vec2(9.0f, 4.0f));
+    auto ball3 = scene.createEntity("Ball3", glm::vec2(-1.0f, 3.0f), glm::vec2(-8.0f, 2.0f));
+    auto ball4 = scene.createEntity("Ball4", glm::vec2(0.5f, -4.0f), glm::vec2(-7.0f, 5.0f));
     auto ball5 = scene.createEntity("Ball5", glm::vec2(0.0f, 5.0f), glm::vec2(12.0f, 0.0f));
 
     glm::vec2 gravity(0.0f, -9.81f);
@@ -67,6 +73,8 @@ int main()
     // Render loop
     while (app.isRunning())
     {
+        glfwPollEvents();
+
         // For maintaining aspect ratio
         int dynaWidth, dynaHeight;
         glfwGetFramebufferSize(app.getWindow(), &dynaWidth, &dynaHeight);
@@ -82,8 +90,17 @@ int main()
         // To prevent massive physics jumps during lag spikes
         if (dt > 0.1f) dt = 0.1f;
 
-        // Input
+        // Inputs
         processInput(app.getWindow());
+
+        if (Input::isKeyPressed(GLFW_KEY_ESCAPE)) {
+            app.close();
+        }
+
+        if (Input::isMouseButtonPressed(GLFW_MOUSE_BUTTON_LEFT)) {
+            glm::vec2 clickPos = screenToWorld(Input::getMousePosition(), dynaWidth, dynaHeight, orthoHeight);
+            scene.createEntity("BallRuntime", clickPos, glm::vec2(0.0f, -10.0f));
+        }
 
         // Movement
         for (auto& obj : scene.getEntities()) {
@@ -97,10 +114,9 @@ int main()
             }
         }
 
+        // Boundary collision
         glm::vec2 minWorldBounds(-orthoWidth, -orthoHeight);
         glm::vec2 maxWorldBounds(orthoWidth, orthoHeight);
-
-        // Boundary collision
         for (auto& obj : scene.getEntities()) {
             BoundarySolver2D::resolveCollision(obj.get(), minWorldBounds, maxWorldBounds);
         }
@@ -120,9 +136,8 @@ int main()
         //imGuiLayer.render(size, color);
         imGuiLayer.endFrame();
 
-        // GLFW: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
         app.swapBuffers();
-        glfwPollEvents();
+        Input::postUpdate();
     }
 
     return 0;
@@ -133,4 +148,16 @@ void processInput(GLFWwindow* window)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
+}
+
+// Map pixels to a normalized device coordinate system (-1.0 to 1.0)
+glm::vec2 screenToWorld(glm::vec2 pos, int windowWidth, int windowHeight, float orthoHeight) {
+    float aspect = (float)windowWidth / (float)windowHeight;
+    float orthoWidth = orthoHeight * aspect;
+
+    float ndcX = (2.0f * (float)pos.x) / windowWidth - 1.0f;
+    float ndcY = 1.0f - (2.0f * (float)pos.y) / windowHeight; // Flip Y axis
+
+    // Multiply by current camera viewing bounds
+    return glm::vec2(ndcX * orthoWidth, ndcY * orthoHeight);
 }

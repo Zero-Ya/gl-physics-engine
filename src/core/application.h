@@ -7,6 +7,8 @@ public:
 	Application(const char* title, int width, int height);
 	~Application();
 
+	void close();
+
 	// Controls
 	bool isRunning() const;
 	void clearScreen(float r, float g, float b, float a) const;

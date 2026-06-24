@@ -7,7 +7,7 @@ GameObject* Scene::createEntity(const std::string& name, glm::vec2 pos, glm::vec
 
 	newObj->addComponent<Transform2D>(pos);
 	auto rb = newObj->addComponent<RigidBody2D>(1.0f);
-	rb->velocity = vel;
+	rb->velocity = vel * 5.0f;
 
 	m_Entities.push_back(std::move(newObj));
 
