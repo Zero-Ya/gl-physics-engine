@@ -13,7 +13,7 @@ public:
 
 	// Should only be used after OpenGL has finished rendering in the main loop
 	void beginFrame();
-	void render(float& size, glm::vec4& color);
+	void renderDemo(float& size, glm::vec4& color);
 	void endFrame();
 private:
 	void init(GLFWwindow* window);

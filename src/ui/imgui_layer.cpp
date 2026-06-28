@@ -41,7 +41,7 @@ void ImGuiLayer::beginFrame()
 }
 
 // This will need a dedicated class later on
-void ImGuiLayer::render(float& size, glm::vec4& color)
+void ImGuiLayer::renderDemo(float& size, glm::vec4& color)
 {
     ImGui::Begin("Window");
     ImGui::Text("Hello world!");

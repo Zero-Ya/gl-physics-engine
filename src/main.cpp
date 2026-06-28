@@ -19,6 +19,7 @@
 
 // UI
 #include "ui/imgui_layer.h"
+#include "ui/panels/profiler_panel.h"
 
 // Rendering
 #include "rendering/utils/shader.h"
@@ -52,6 +53,9 @@ int main()
     Time timer;
     Input::init(app.getWindow());
 
+    ProfilerPanel profilerPanel(120);
+    float lastTotalFrameTimeMs = 0.0f;
+
     // Shader
     Shader debugShader("assets/shaders/debug.vert", "assets/shaders/debug.frag");
 
@@ -74,6 +78,9 @@ int main()
     while (app.isRunning())
     {
         glfwPollEvents();
+
+        // Entire frame time start
+        Time::TimePoint frameStart = timer.getCurrentTimePoint();
 
         // For maintaining aspect ratio
         int dynaWidth, dynaHeight;
@@ -102,6 +109,8 @@ int main()
             scene.createEntity("BallRuntime", clickPos, glm::vec2(0.0f, -10.0f));
         }
 
+        // Physics time start
+        Time::TimePoint physicsStart = timer.getCurrentTimePoint();
         // Movement
         for (auto& obj : scene.getEntities()) {
             Integrator2D::integrate(obj.get(), dt, gravity);
@@ -121,6 +130,9 @@ int main()
             BoundarySolver2D::resolveCollision(obj.get(), minWorldBounds, maxWorldBounds);
         }
 
+        // Stop time for physics engine
+        float physicsTimeMs = timer.getElapsedTimeMs(physicsStart);
+
         // Render the scene
         app.clearScreen(0.2f, 0.3f, 0.3f, 1.0f);
 
@@ -133,11 +145,13 @@ int main()
 
         // ImGui render
         imGuiLayer.beginFrame();
-        //imGuiLayer.render(size, color);
+        profilerPanel.onImGuiRender(lastTotalFrameTimeMs, physicsTimeMs, scene.getEntityCount());
         imGuiLayer.endFrame();
 
         app.swapBuffers();
         Input::postUpdate();
+
+        lastTotalFrameTimeMs = timer.getElapsedTimeMs(frameStart);
     }
 
     return 0;
