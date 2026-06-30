@@ -29,6 +29,7 @@
 #include "physics/2D/integrator2d.h"
 #include "physics/2D/boundary_solver2d.h"
 #include "physics/2D/collision_solver2d.h"
+#include "physics/2D/spatial_grid.h"
 
 // Components
 #include "components/2D/rigidbody2d.h"
@@ -48,6 +49,10 @@ glm::vec2 screenToWorld(glm::vec2 pos, int windowWidth, int windowHeight, float 
 
 int main()
 {
+    float screenWidth = (float)SCR_WIDTH;
+    float screenHeight = (float)SCR_HEIGHT;
+    float maxCircleDiameter = 20.0f;
+
     // Init app and core systems
     Application app("Physics Engine", SCR_WIDTH, SCR_HEIGHT);
     Time timer;
@@ -70,6 +75,10 @@ int main()
     auto ball5 = scene.createEntity("Ball5", glm::vec2(0.0f, 5.0f), glm::vec2(12.0f, 0.0f));
 
     glm::vec2 gravity(0.0f, -9.81f);
+
+    // Spatial grid init
+    SpatialGrid spatialGrid(screenWidth, screenHeight, maxCircleDiameter);
+    std::vector<size_t> neighborCellIndices;
 
     // ImGui init
     ImGuiLayer imGuiLayer(app.getWindow());
@@ -109,6 +118,12 @@ int main()
             scene.createEntity("BallRuntime", clickPos, glm::vec2(0.0f, -10.0f));
         }
 
+        // Spatial grid build
+        spatialGrid.clear();
+        for (size_t i = 0; i < scene.getEntityCount(); ++i) {
+            spatialGrid.insert(i, scene.getEntities()[i].get()->getComponent<Transform2D>()->position); // Bruh
+        }
+
         // Physics time start
         Time::TimePoint physicsStart = timer.getCurrentTimePoint();
         // Movement
@@ -116,10 +131,27 @@ int main()
             Integrator2D::integrate(obj.get(), dt, gravity);
         }
 
+        // Old version of obj-obj collision
+        //for (size_t i = 0; i < scene.getEntityCount(); ++i) {
+        //    for (size_t j = i + 1; j < scene.getEntityCount(); ++j) {
+        //        CollisionSolver2D::resolveCircleCollision(scene.getEntities()[i].get(), scene.getEntities()[j].get());
+        //    }
+        //}
+
         // Object-object collision
         for (size_t i = 0; i < scene.getEntityCount(); ++i) {
-            for (size_t j = i + 1; j < scene.getEntityCount(); ++j) {
-                CollisionSolver2D::resolveCircleCollision(scene.getEntities()[i].get(), scene.getEntities()[j].get());
+            spatialGrid.getNeighborCells(scene.getEntities()[i].get()->getComponent<Transform2D>()->position, neighborCellIndices);
+
+            for (size_t cellIdx : neighborCellIndices) {
+                const auto& cell = spatialGrid.getCell(cellIdx);
+
+                for (size_t neighborIndex : cell.entityIndices) {
+                    // Double-Check Protection: 
+                    // 1. Don't check an entity against itself
+                    // 2. Only resolve if i < neighborIndex to enforce one check per pair
+                    if (i >= neighborIndex) continue;
+                    CollisionSolver2D::resolveCircleCollision(scene.getEntities()[i].get(), scene.getEntities()[neighborIndex].get());
+                }
             }
         }
 
