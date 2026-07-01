@@ -8,7 +8,7 @@ class DebugDraw {
 public:
 	DebugDraw(Shader& shader);
 
-	void drawBox(const glm::vec2& position, const glm::vec2& size, const glm::vec3& color, const glm::mat4& projection);
+	void drawBox(const glm::vec2& position, const glm::vec2& size, const glm::vec3& color, const glm::mat4& projection, float radius);
 
 private:
 	unsigned int m_VBO, m_VAO, m_EBO;

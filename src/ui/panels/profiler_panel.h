@@ -11,9 +11,11 @@ public:
 	void onImGuiRender(float frameTimeMs, float physicsTimeMs, size_t entityCount);
 
 	bool& isOpen() { return m_IsOpen; }
+	bool& isDebugGridEnabled() { return showDebugGrid; }
 
 private:
 	bool m_IsOpen = true;
+	bool showDebugGrid = false;
 	size_t m_MaxSamples;
 
 	std::vector<float> m_FrameTimeHistory;

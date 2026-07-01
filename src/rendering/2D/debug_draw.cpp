@@ -38,11 +38,13 @@ DebugDraw::DebugDraw(Shader& shader) : m_Shader(shader) {
 	glBindVertexArray(0);
 }
 
-void DebugDraw::drawBox(const glm::vec2& position, const glm::vec2& size, const glm::vec3& color, const glm::mat4& projection)
+void DebugDraw::drawBox(const glm::vec2& position, const glm::vec2& size, const glm::vec3& color, const glm::mat4& projection, float radius)
 {
 	glm::mat4 model = glm::mat4(1.0f);
 	model = glm::translate(model, glm::vec3(position, 0.0f));
-	model = glm::scale(model, glm::vec3(size, 1.0f));
+	model = glm::scale(model, glm::vec3(size, 1.0f)); // Hmmm...
+	// We multiplied the radius by two because our mesh (vertices) total size is 1.0 (-0.5 to 0.5)
+	model = glm::scale(model, glm::vec3(radius * 2, radius * 2, 1.0f));
 
 	m_Shader.use();
 	m_Shader.setMat4("u_Model", model);

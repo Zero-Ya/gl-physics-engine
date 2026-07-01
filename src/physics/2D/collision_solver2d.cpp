@@ -3,6 +3,9 @@
 #include "components/2D/transform2d.h"
 #include "components/2D/rigidbody2d.h"
 
+#include <algorithm>
+#include <iostream>
+
 void CollisionSolver2D::resolveCircleCollision(GameObject* objA, GameObject* objB) {
     auto* tfA = objA->getComponent<Transform2D>();
     auto* rbA = objA->getComponent<RigidBody2D>();
@@ -11,10 +14,9 @@ void CollisionSolver2D::resolveCircleCollision(GameObject* objA, GameObject* obj
 
     if (!tfA || !rbA || !tfB || !rbB) return;
 
-    // Hardcoded stuff
-    float radiusA = 0.5f;
-    float radiusB = 0.5f;
-    float restitution = 0.8f; // Bounciness
+    float radiusA = tfA->radius;
+    float radiusB = tfB->radius;
+    float combinedRestitution = std::min(rbA->restitution, rbB->restitution); // Bounciness
 
     // 1. Detection phase
     glm::vec2 distanceVec = tfB->position - tfA->position;
@@ -41,7 +43,7 @@ void CollisionSolver2D::resolveCircleCollision(GameObject* objA, GameObject* obj
 
     if (velAlongNormal > 0) return;
 
-    float impulseMagnitude = -(1.0f + restitution) * velAlongNormal;
+    float impulseMagnitude = -(1.0f + combinedRestitution) * velAlongNormal;
     impulseMagnitude /= totalInverseMass;
 
     glm::vec2 impulseVector = impulseMagnitude * normal;

@@ -53,6 +53,12 @@ void ProfilerPanel::onImGuiRender(float frameTimeMs, float physicsTimeMs, size_t
             ImGui::Spacing();
             ImGui::TextColored(ImVec4(1.0f, 0.0f, 0.0f, 1.0f), "WARNING: Performance dropped below 60 FPS!");
         }
+
+        ImGui::Spacing();
+        ImGui::Separator();
+        ImGui::Spacing();
+
+        ImGui::Checkbox("Show Spatial Grid", &showDebugGrid);
     }
     ImGui::End();
 }

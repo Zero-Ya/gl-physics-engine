@@ -5,6 +5,7 @@
 struct RigidBody2D : public Component {
 	glm::vec2 velocity{ 0.0f, 0.0f };
 	glm::vec2 force{ 0.0f, 0.0f };
+	float restitution{ 0.8f };
 
 	float mass{ 1.0f };
 	float inverseMass{ 1.0f };
