@@ -1,13 +1,12 @@
 #include "application.h"
 
+#include <iostream>
 #include <glad/glad.h>
 #include <glfw/glfw3.h>
 
-#include <iostream>
-
 // Executes whenever window is resized
-void framebuffer_size_callback(GLFWwindow* window, int width, int height)
-{
+void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
+    if (height == 0) height = 1;
     glViewport(0, 0, width, height);
 }
 

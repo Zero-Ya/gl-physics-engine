@@ -17,7 +17,7 @@ public:
 	// Window getter
 	GLFWwindow* getWindow() const { return m_Window; }
 
-	// Dimensions getter
+	// Dimension getters
 	int getWidth() const { return m_Width; }
 	int getHeight() const { return m_Height; }
 

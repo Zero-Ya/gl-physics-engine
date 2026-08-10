@@ -1,8 +1,9 @@
 #include "scene.h"
+
 #include "components/2D/rigidbody2d.h"
 #include "components/2D/transform2d.h"
 
-GameObject* Scene::createEntity(const std::string& name, glm::vec2 pos, glm::vec2 vel, float radius) {
+GameObject* Scene::createCircleEntity(const std::string& name, glm::vec2 pos, glm::vec2 vel, float radius) {
 	auto newObj = std::make_unique<GameObject>(entityId++, name);
 
 	newObj->addComponent<Transform2D>(pos, 0.0f, radius);

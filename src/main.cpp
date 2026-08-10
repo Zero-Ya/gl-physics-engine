@@ -3,10 +3,6 @@
 #include <glfw/glfw3.h>
 
 #include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#define GLM_ENABLE_EXPERIMENTAL
-#include <glm/gtx/string_cast.hpp>
 
 #include <iostream>
 #include <memory>
@@ -23,22 +19,10 @@
 #include "ui/panels/profiler_panel.h"
 
 // Rendering
-#include "rendering/utils/shader.h"
-#include "rendering/2D/debug_draw.h"
+#include "rendering/utils/renderer2d.h"
 
-// Physics
-#include "physics/2D/integrator2d.h"
-#include "physics/2D/boundary_solver2d.h"
-#include "physics/2D/collision_solver2d.h"
-#include "physics/2D/spatial_grid.h"
-
-// Components
-#include "components/2D/rigidbody2d.h"
-#include "components/2D/transform2d.h"
-
-// Scene
-#include "scene/game_object.h"
-#include "scene/scene.h"
+// Physics engine
+#include "simulations/collision_simulation2d.h"
 
 void processInput(GLFWwindow* window);
 
@@ -46,17 +30,16 @@ void processInput(GLFWwindow* window);
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
 
-glm::vec2 screenToWorld(glm::vec2 pos, int windowWidth, int windowHeight, float orthoHeight);
+glm::vec2 screenToWorld(glm::vec2 pos, int windowWidth, int windowHeight, float aspectedHeight);
+
 void calcAspectRatio(int& dynaWidth,
                      int& dynaHeight,
-                     float& orthoWidth,
-                     float& orthoHeight,
+                     float& aspectedWidth,
+                     float& aspectedHeight,
                      glm::mat4& projection);
 
 int main()
 {
-    float maxCircleDiameter = 0.5f;
-
     // Init app and core systems
     Application app("Physics Engine", SCR_WIDTH, SCR_HEIGHT);
     Time timer;
@@ -65,47 +48,30 @@ int main()
     ProfilerPanel profilerPanel(120);
     float lastTotalFrameTimeMs = 0.0f;
 
-    // Shader
-    Shader debugShader("assets/shaders/debug.vert", "assets/shaders/debug.frag");
-
-    DebugDraw debugRenderer(debugShader);
-
-    // Random num init... I'm not completely sure how this works
-    std::random_device rd;
-    std::mt19937 gen(rd());
-    std::uniform_int_distribution<int> distr(-10, 10);
-
-    // Create scene
-    Scene scene;
-    for (int i = 0; i < 500; ++i) {
-        scene.createEntity("Ball", glm::vec2(0.0f, 0.0f), glm::vec2(static_cast<float>(distr(gen)), static_cast<float>(distr(gen))), 0.1f);
-    }
-
-    glm::vec2 gravity(0.0f, 0.0f); // Zero gravity
-    //glm::vec2 gravity(0.0f, -9.81f);
-
     // Track window size, view size and projection stuff
     int dynaWidth, dynaHeight;
     glfwGetFramebufferSize(app.getWindow(), &dynaWidth, &dynaHeight);
     int lastWidth = dynaWidth;
     int lastHeight = dynaHeight;
 
-    float orthoWidth{};
-    float orthoHeight{};
-    glm::mat4 projection{};
-    calcAspectRatio(dynaWidth, dynaHeight, orthoWidth, orthoHeight, projection);
+    float aspectedWidth {};
+    float aspectedHeight {};
+    glm::mat4 projection {};
+    calcAspectRatio(dynaWidth, dynaHeight, aspectedWidth, aspectedHeight, projection);
 
     // ImGui init
     ImGuiLayer imGuiLayer(app.getWindow());
 
-    // Spatial grid init
-    SpatialGrid spatialGrid(orthoWidth * 2.0f, orthoHeight * 2.0f, maxCircleDiameter);
-    std::vector<size_t> neighborCellIndices;
-    neighborCellIndices.reserve(9);
+    // Renderer init
+    Renderer2D renderer;
+    renderer.init();
 
-    // Boundary size
-    glm::vec2 minWorldBounds(-orthoWidth, -orthoHeight);
-    glm::vec2 maxWorldBounds(orthoWidth, orthoHeight);
+    // Physics engine init
+    CollisionSimulation2D collisionEngine;
+    collisionEngine.init(500, aspectedWidth, aspectedHeight);
+
+    collisionEngine.setWorldBounds(glm::vec2(-aspectedWidth, -aspectedHeight), glm::vec2(aspectedWidth, aspectedHeight));
+    renderer.setOrthographicProjection(-aspectedWidth, aspectedWidth, -aspectedHeight, aspectedHeight);
 
     // Render loop
     while (app.isRunning())
@@ -115,25 +81,23 @@ int main()
         // Entire frame time start
         Time::TimePoint frameStart = timer.getCurrentTimePoint();
 
-        // For maintaining aspect ratio
+        timer.update();
+        float dt = timer.getDeltaTime();
+        // To prevent massive physics jumps during lag spikes
+        if (dt > 0.1f) dt = 0.1f;
+
+        // Terrible window resize event callback
         glfwGetFramebufferSize(app.getWindow(), &dynaWidth, &dynaHeight);
         if (dynaHeight == 0) dynaHeight = 1;
         if (dynaWidth != lastWidth || dynaHeight != lastHeight) {
             lastWidth = dynaWidth;
             lastHeight = dynaHeight;
 
-            calcAspectRatio(dynaWidth, dynaHeight, orthoWidth, orthoHeight, projection);
-            spatialGrid.resize(orthoWidth * 2.0f, orthoHeight * 2.0f);
+            calcAspectRatio(dynaWidth, dynaHeight, aspectedWidth, aspectedHeight, projection);
 
-            minWorldBounds = glm::vec2(-orthoWidth, -orthoHeight);
-            maxWorldBounds = glm::vec2(orthoWidth, orthoHeight);
+            renderer.setOrthographicProjection(-aspectedWidth, aspectedWidth, -aspectedHeight, aspectedHeight);
+            collisionEngine.updateSpatialGridAndWorldBounds(aspectedWidth, aspectedHeight);
         }
-
-        timer.update();
-        float dt = timer.getDeltaTime();
-
-        // To prevent massive physics jumps during lag spikes
-        if (dt > 0.1f) dt = 0.1f;
 
         // Inputs
         processInput(app.getWindow());
@@ -143,80 +107,40 @@ int main()
         }
 
         if (Input::isMouseButtonPressed(GLFW_MOUSE_BUTTON_LEFT)) {
-            glm::vec2 clickPos = screenToWorld(Input::getMousePosition(), dynaWidth, dynaHeight, orthoHeight);
-            scene.createEntity("BallRuntime", clickPos, glm::vec2(0.0f, -10.0f), 0.1f);
+            glm::vec2 clickPos = screenToWorld(Input::getMousePosition(), dynaWidth, dynaHeight, aspectedHeight);
+            collisionEngine.spawnCircle(clickPos, glm::vec2(0.0f, -10.0f), 0.1f);
         }
 
-        // Spatial grid build
-        spatialGrid.clear();
-        for (size_t i = 0; i < scene.getEntityCount(); ++i) {
-            spatialGrid.insert(i, scene.getEntities()[i].get()->getComponent<Transform2D>()->position, orthoWidth, orthoHeight); // Bruh
-        }
 
-        // Physics time start
-        Time::TimePoint physicsStart = timer.getCurrentTimePoint();
-        // Movement
-        for (auto& obj : scene.getEntities()) {
-            Integrator2D::integrate(obj.get(), dt, gravity);
-        }
 
-        // Old version of obj-obj collision
-        //for (size_t i = 0; i < scene.getEntityCount(); ++i) {
-        //    for (size_t j = i + 1; j < scene.getEntityCount(); ++j) {
-        //        CollisionSolver2D::resolveCircleCollision(scene.getEntities()[i].get(), scene.getEntities()[j].get());
-        //    }
-        //}
+        // Engine start
+        // Physics engine update
+        collisionEngine.update(dt, aspectedWidth, aspectedHeight);
 
-        // Object-object collision
-        for (size_t i = 0; i < scene.getEntityCount(); ++i) {
-            spatialGrid.getNeighborCells(scene.getEntities()[i].get()->getComponent<Transform2D>()->position, neighborCellIndices, orthoWidth, orthoHeight);
-
-            for (size_t cellIdx : neighborCellIndices) {
-                const auto& cell = spatialGrid.getCell(cellIdx);
-
-                for (size_t neighborIndex : cell.entityIndices) {
-                    // Double-Check Protection: 
-                    // 1. Don't check an entity against itself
-                    // 2. Only resolve if i < neighborIndex to enforce one check per pair
-                    if (i >= neighborIndex) continue;
-                    CollisionSolver2D::resolveCircleCollision(scene.getEntities()[i].get(), scene.getEntities()[neighborIndex].get());
-                }
-            }
-        }
-
-        // Boundary collision
-        for (auto& obj : scene.getEntities()) {
-            BoundarySolver2D::resolveCollision(obj.get(), minWorldBounds, maxWorldBounds);
-        }
-
-        // Stop time for physics engine
-        float physicsTimeMs = timer.getElapsedTimeMs(physicsStart);
-
-        // Render the scene
+        // Render scene
         app.clearScreen(0.2f, 0.3f, 0.3f, 1.0f);
+        renderer.submit(collisionEngine.getCircles());
 
-        for (auto& obj : scene.getEntities()) {
-            auto* tf = obj->getComponent<Transform2D>();
-            if (tf) {
-                debugRenderer.drawBox(tf->position, glm::vec2(1.0f, 1.0f), glm::vec3(0.0f, 1.0f, 0.0f), projection, tf->radius);
-            }
-        }
 
-        // ImGui render
+
+        // ImGui render /////////////
         imGuiLayer.beginFrame();
         if (profilerPanel.isDebugGridEnabled()) {
-            spatialGrid.drawDebugGrid(static_cast<float>(dynaWidth), static_cast<float>(dynaHeight), orthoWidth, orthoHeight);
+            collisionEngine.getSpatialGrid()->drawDebugGrid(static_cast<float>(dynaWidth), static_cast<float>(dynaHeight), aspectedWidth, aspectedHeight);
         }
-
-        profilerPanel.onImGuiRender(lastTotalFrameTimeMs, physicsTimeMs, scene.getEntityCount());
+        profilerPanel.onImGuiRender(lastTotalFrameTimeMs, collisionEngine.getPhysicsTimeMs(), collisionEngine.getEntityCount());
         imGuiLayer.endFrame();
+        /////////////////////////////
+        
 
-        app.swapBuffers();
-        Input::postUpdate();
 
+        // Stop total time for one frame and update last width, height of the frame
         lastTotalFrameTimeMs = timer.getElapsedTimeMs(frameStart);
         lastWidth = dynaWidth;
         lastHeight = dynaHeight;
+
+        app.swapBuffers();
+        Input::postUpdate();
     }
 
     return 0;
@@ -230,25 +154,25 @@ void processInput(GLFWwindow* window)
 }
 
 // Map pixels to a normalized device coordinate system (-1.0 to 1.0)
-glm::vec2 screenToWorld(glm::vec2 pos, int windowWidth, int windowHeight, float orthoHeight) {
+glm::vec2 screenToWorld(glm::vec2 pos, int windowWidth, int windowHeight, float aspectedHeight) {
     float aspect = (float)windowWidth / (float)windowHeight;
-    float orthoWidth = orthoHeight * aspect;
+    float aspectedWidth = aspectedHeight * aspect;
 
     float ndcX = (2.0f * (float)pos.x) / windowWidth - 1.0f;
     float ndcY = 1.0f - (2.0f * (float)pos.y) / windowHeight; // Flip Y axis
 
     // Multiply by current camera viewing bounds
-    return glm::vec2(ndcX * orthoWidth, ndcY * orthoHeight);
+    return glm::vec2(ndcX * aspectedWidth, ndcY * aspectedHeight);
 }
 
 void calcAspectRatio(int& dynaWidth,
                      int& dynaHeight,
-                     float& orthoWidth,
-                     float& orthoHeight,
+                     float& aspectedWidth,
+                     float& aspectedHeight,
                      glm::mat4& projection)
-{ 
+{
     float aspect = (float)dynaWidth / (float)dynaHeight;
-    orthoHeight = 4.5f;
-    orthoWidth = orthoHeight * aspect;
-    projection = glm::ortho(-orthoWidth, orthoWidth, -orthoHeight, orthoHeight, -1.0f, 1.0f);
+    aspectedHeight = 4.5f;
+    aspectedWidth = aspectedHeight * aspect;
+    projection = glm::ortho(-aspectedWidth, aspectedWidth, -aspectedHeight, aspectedHeight, -1.0f, 1.0f);
 }

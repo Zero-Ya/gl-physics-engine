@@ -14,13 +14,13 @@ public:
 	SpatialGrid(float screenWidth, float screenHeight, float cellSize);
 
 	void clear();
-	void insert(size_t entityIndex, const glm::vec2& position, float orthoWidth, float orthoHeight);
+	void insert(size_t entityIndex, const glm::vec2& position, float aspectedWidth, float aspectedHeight);
 	void resize(float newScreenWidth, float newScreenHeight);
 
-	void getNeighborCells(const glm::vec2& position, std::vector<size_t>& outCellIndices, float orthoWidth, float orthoHeight) const;
+	void getNeighborCells(const glm::vec2& position, std::vector<size_t>& outCellIndices, float aspectedWidth, float aspectedHeight) const;
 	const GridCell& getCell(size_t cellIndex) const { return m_Cells[cellIndex]; }
 
-	void drawDebugGrid(float dynaWidth, float dynaHeight, float orthoWidth, float orthoHeight) const;
+	void drawDebugGrid(float dynaWidth, float dynaHeight, float aspectedWidth, float aspectedHeight) const;
 
 private:
 	float m_CellSize;
