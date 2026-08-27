@@ -15,3 +15,17 @@ void Time::update() {
 
 	m_DeltaTime = frameDuration.count();
 }
+
+//float currentFrameTime = static_cast<float>(glfwGetTime());
+//float dt = currentFrameTime - lastFrameTime;
+//lastFrameTime = currentFrameTime;
+
+//Time::TimePoint frameStart = m_Timer->getCurrentTimePoint();
+//m_Timer->update();
+//float dt = m_Timer->getDeltaTime();
+//// To prevent massive physics jumps during lag spikes
+//if (dt > 0.1f) dt = 0.1f;
+//
+//// render/update
+//
+//lastTotalFrameTimeMs = m_Timer->getElapsedTimeMs(frameStart);

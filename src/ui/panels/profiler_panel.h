@@ -8,7 +8,7 @@ public:
 	ProfilerPanel(size_t maxSamples = 100);
 	~ProfilerPanel() = default;
 
-	void onImGuiRender(float frameTimeMs, float physicsTimeMs, size_t entityCount);
+	void onImGuiRender(float frameTimeMs, float physicsTimeMs, size_t entityCount, bool spatialDebugCheck);
 
 	bool& isOpen() { return m_IsOpen; }
 	bool& isDebugGridEnabled() { return showDebugGrid; }

@@ -7,7 +7,7 @@ ProfilerPanel::ProfilerPanel(size_t maxSamples)
 	: m_MaxSamples(maxSamples), m_FrameTimeHistory(maxSamples, 0.0f), m_PhysicsTimeHistory(maxSamples, 0.0f)
 {}
 
-void ProfilerPanel::onImGuiRender(float frameTimeMs, float physicsTimeMs, size_t entityCount) {
+void ProfilerPanel::onImGuiRender(float frameTimeMs, float physicsTimeMs, size_t entityCount, bool spatialDebugCheck) {
 	if (!m_IsOpen) return;
 
 	m_FrameTimeHistory[m_HistoryOffset] = frameTimeMs;
@@ -58,7 +58,8 @@ void ProfilerPanel::onImGuiRender(float frameTimeMs, float physicsTimeMs, size_t
         ImGui::Separator();
         ImGui::Spacing();
 
-        ImGui::Checkbox("Show Spatial Grid", &showDebugGrid);
+        if (spatialDebugCheck)
+            ImGui::Checkbox("Show Spatial Grid", &showDebugGrid);
     }
     ImGui::End();
 }

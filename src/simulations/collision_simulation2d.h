@@ -18,11 +18,11 @@ struct CircleEntity {
 
 class CollisionSimulation2D {
 public:
-    CollisionSimulation2D() = default;
+    CollisionSimulation2D(SpatialGrid& spatialGrid);
     ~CollisionSimulation2D() = default;
 
-    void init(size_t initialCircleCount, float aspectedWidth, float aspectedHeight);
-    void update(float dt, float aspectedWidth, float aspectedHeight);
+    void init(size_t initialCircleCount);
+    void update(float dt);
     void clear();
 
     // Scene & Debug Management
@@ -41,29 +41,25 @@ public:
         m_WorldMax = maxBounds;
     }
 
-    void updateSpatialGridAndWorldBounds(float aspectedWidth, float aspectedHeight);
-
-    std::unique_ptr<SpatialGrid>& getSpatialGrid() { return m_SpatialGrid; }
+    void updateSpatialGridAndWorldBounds(float virtualWidth, float virtualHeight, float cellSize);
 
 private:
     void integrateMotion(float dt);
-    void resolveCollisions(float aspectedWidth, float aspectedHeight);
+    void resolveCollisions();
     void resolveBoundaryCollisions();
 
-    void buildSpatialGrid(float aspectedWidth, float aspectedHeight);
+    void buildSpatialGrid();
 
 private:
     std::unique_ptr<Scene> m_Scene;
-    std::unique_ptr<SpatialGrid> m_SpatialGrid;
+    SpatialGrid& m_SpatialGrid;
     std::vector<size_t> neighborCellIndices;
 
     // World Constraints
     glm::vec2 m_Gravity { 0.0f, 0.0f }; // Zero gravity
     //glm::vec2 m_Gravity{ 0.0f, -9.81f };
-    glm::vec2 m_WorldMin { -10.0f, -10.0f };
+    glm::vec2 m_WorldMin { 0.0f, 0.0f };
     glm::vec2 m_WorldMax { 10.0f,  10.0f };
 
     float m_PhysicsTimeMs = 0.0f;
-
-    bool showSpatialGrid = false;
 };

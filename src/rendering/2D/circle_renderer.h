@@ -4,13 +4,30 @@
 
 #include "rendering/utils/shader.h"
 
+struct CircleData {
+    glm::vec2 position;
+    glm::vec3 color;
+    float radius;
+};
+
 class CircleRenderer {
 public:
-	CircleRenderer();
+    CircleRenderer() = default;
+    ~CircleRenderer() = default;
 
-	void drawCircle(const glm::vec2& position, const glm::vec2& size, const glm::vec3& color, const glm::mat4& projection, float radius);
+    void init();
+    void shutdown();
+
+	void drawCircle(const glm::vec2& position, const glm::vec3& color, float radius);
+    void flush(const glm::mat4& projection);
 
 private:
-	unsigned int m_VBO, m_VAO, m_EBO;
+    std::vector<CircleData> m_CircleBatch;
+
+    static constexpr size_t MAX_CIRCLES = 10000;
+
+	unsigned int m_VAO, m_EBO;
+    unsigned int m_QuadVBO = 0;
+    unsigned int m_InstanceVBO = 0;
 	std::unique_ptr<Shader> m_CircleShader;
 };

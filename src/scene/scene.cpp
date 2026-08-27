@@ -3,7 +3,7 @@
 #include "components/2D/rigidbody2d.h"
 #include "components/2D/transform2d.h"
 
-GameObject* Scene::createCircleEntity(const std::string& name, glm::vec2 pos, glm::vec2 vel, float radius) {
+void Scene::createCircleEntity(const std::string& name, glm::vec2 pos, glm::vec2 vel, float radius) {
 	auto newObj = std::make_unique<GameObject>(entityId++, name);
 
 	newObj->addComponent<Transform2D>(pos, 0.0f, radius);
@@ -11,6 +11,4 @@ GameObject* Scene::createCircleEntity(const std::string& name, glm::vec2 pos, gl
 	rb->velocity = vel * 5.0f;
 
 	m_Entities.push_back(std::move(newObj));
-
-	return newObj.get();
 }
