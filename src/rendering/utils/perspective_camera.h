@@ -10,23 +10,23 @@ class PerspectiveCamera {
 public:
     PerspectiveCamera(float fov, float aspectRatio, float zNear, float zFar);
 
-    const glm::mat4& GetModelMatrix() const { return m_ModelMatrix; }
-    const glm::mat4& GetViewMatrix() const { return m_ViewMatrix; }
-    const glm::mat4& GetProjectionMatrix() const { return m_ProjectionMatrix; }
-    const glm::mat4& GetViewProjectionMatrix() const { return m_ViewProjectionMatrix; }
+    const glm::mat4& getModelMatrix() const { return m_ModelMatrix; }
+    const glm::mat4& getViewMatrix() const { return m_ViewMatrix; }
+    const glm::mat4& getProjectionMatrix() const { return m_ProjectionMatrix; }
+    const glm::mat4& getViewProjectionMatrix() const { return m_ViewProjectionMatrix; }
 
-    const glm::vec3& GetPosition() const { return m_Position; }
-    const glm::vec3& GetFrontVector() const { return m_Front; }
-    const glm::vec3& GetRightVector() const { return m_Right; }
+    const glm::vec3& getPosition() const { return m_Position; }
+    const glm::vec3& getFrontVector() const { return m_Front; }
+    const glm::vec3& getRightVector() const { return m_Right; }
 
-    void SetProjection(float fov, float aspectRatio, float zNear, float zFar);
-    void SetPosition(glm::vec3 pos);
-    void SetRotation(float pitch, float yaw) { m_Pitch = pitch; m_Yaw = yaw; UpdateCameraVectors(); }
+    void setProjection(float fov, float aspectRatio, float zNear, float zFar);
+    void setPosition(glm::vec3 pos);
+    void setRotation(float pitch, float yaw) { m_Pitch = pitch; m_Yaw = yaw; updateCameraVectors(); }
 
 private:
-    void RecalculateProjection();
-    void RecalculateView();
-    void UpdateCameraVectors();
+    void recalculateProjection();
+    void recalculateView();
+    void updateCameraVectors();
 
 private:
     glm::mat4 m_ModelMatrix;

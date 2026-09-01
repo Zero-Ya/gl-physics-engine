@@ -1,11 +1,11 @@
-#include "circle_renderer.h"
+#include "circle_renderer2d.h"
 #include <glad/glad.h>
 
 void CircleRenderer::init() {
 	m_CircleBatch.reserve(MAX_CIRCLES);
 
 	// Create the shader
-	m_CircleShader = std::make_unique<Shader>("assets/shaders/circle_renderer2d.vert", "assets/shaders/circle_renderer2d.frag");
+	m_CircleShader = std::make_unique<Shader>("assets/shaders/2D/circle_renderer2d.vert", "assets/shaders/2D/circle_renderer2d.frag");
 
 	float quadVertices[] = {
 		// Positions	Tex coords
@@ -84,23 +84,6 @@ void CircleRenderer::drawCircle(const glm::vec2& position, const glm::vec3& colo
 
 	m_CircleBatch.push_back({ position, color, radius });
 }
-
-//void CircleRenderer::drawCircle(const glm::vec2& position, const glm::vec2& size, const glm::vec3& color, float radius) {
-//	glm::mat4 model = glm::mat4(1.0f);
-//	model = glm::translate(model, glm::vec3(position, 0.0f));
-//	model = glm::scale(model, glm::vec3(size, 1.0f)); // Hmmm...
-//	// We multiplied the radius by two because our mesh (vertices) total size is 1.0 (-0.5 to 0.5)
-//	model = glm::scale(model, glm::vec3(radius * 2, radius * 2, 1.0f));
-//
-//	m_CircleShader->use();
-//	m_CircleShader->setMat4("u_Model", model);
-//	m_CircleShader->setMat4("u_Projection", projection);
-//	m_CircleShader->setVec3("u_Color", color);
-//
-//	glBindVertexArray(m_VAO);
-//	glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-//	glBindVertexArray(0);
-//}
 
 void CircleRenderer::flush(const glm::mat4& projection) {
 	if (m_CircleBatch.empty()) return;

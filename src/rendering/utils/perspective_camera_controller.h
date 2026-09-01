@@ -6,10 +6,10 @@ class PerspectiveCameraController {
 public:
 	PerspectiveCameraController(float aspectRatio);
 
-	void OnUpdate(float ts);
+	void onUpdate(float ts);
 
-	PerspectiveCamera& GetCamera() { return m_Camera; }
-	const PerspectiveCamera& GetCamera() const { return m_Camera; }
+	PerspectiveCamera& getCamera() { return m_Camera; }
+	const PerspectiveCamera& getCamera() const { return m_Camera; }
 
 private:
 	float m_AspectRatio = 1.778f;

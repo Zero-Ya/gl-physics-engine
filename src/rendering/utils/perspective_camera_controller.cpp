@@ -14,7 +14,7 @@ PerspectiveCameraController::PerspectiveCameraController(float aspectRatio)
     m_Zoom(45.0f)
 {}
 
-void PerspectiveCameraController::OnUpdate(float ts) {
+void PerspectiveCameraController::onUpdate(float ts) {
     // Mouse
     if (Input::isMouseButtonHeld(GLFW_MOUSE_BUTTON_RIGHT)) { // Or lock mouse cursor 
         glm::vec2 mousePos = glm::vec2(Input::getMouseX(), Input::getMouseY());
@@ -35,7 +35,7 @@ void PerspectiveCameraController::OnUpdate(float ts) {
         // Clamp Pitch to prevent camera flipping upside down (Gimbal Lock protection)
         m_Pitch = std::clamp(m_Pitch, -89.0f, 89.0f);
 
-        m_Camera.SetRotation(m_Pitch, m_Yaw);
+        m_Camera.setRotation(m_Pitch, m_Yaw);
 
     }
     else {
@@ -46,14 +46,14 @@ void PerspectiveCameraController::OnUpdate(float ts) {
     float velocity = m_MovementSpeed * ts;
 
     if (Input::isKeyHeld(GLFW_KEY_W))
-        m_CameraPosition += m_Camera.GetFrontVector() * velocity;
+        m_CameraPosition += m_Camera.getFrontVector() * velocity;
     if (Input::isKeyHeld(GLFW_KEY_S))
-        m_CameraPosition -= m_Camera.GetFrontVector() * velocity;
+        m_CameraPosition -= m_Camera.getFrontVector() * velocity;
 
     if (Input::isKeyHeld(GLFW_KEY_A))
-        m_CameraPosition -= m_Camera.GetRightVector() * velocity;
+        m_CameraPosition -= m_Camera.getRightVector() * velocity;
     if (Input::isKeyHeld(GLFW_KEY_D))
-        m_CameraPosition += m_Camera.GetRightVector() * velocity;
+        m_CameraPosition += m_Camera.getRightVector() * velocity;
 
     // Vertical movement
     if (Input::isKeyHeld(GLFW_KEY_E))
@@ -61,7 +61,7 @@ void PerspectiveCameraController::OnUpdate(float ts) {
     if (Input::isKeyHeld(GLFW_KEY_Q))
         m_CameraPosition.y -= velocity;
 
-    m_Camera.SetPosition(m_CameraPosition);
+    m_Camera.setPosition(m_CameraPosition);
 
     // Add zoom later
 }

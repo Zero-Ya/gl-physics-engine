@@ -5,34 +5,34 @@
 PerspectiveCamera::PerspectiveCamera(float fov, float aspectRatio, float zNear, float zFar)
 	: m_Zoom(fov), m_AspectRatio(aspectRatio), m_Near(zNear), m_Far(zFar), m_ModelMatrix(1.0f)
 {
-	RecalculateProjection();
-	UpdateCameraVectors();
+	recalculateProjection();
+	updateCameraVectors();
 }
 
-void PerspectiveCamera::SetProjection(float fov, float aspectRatio, float zNear, float zFar) {
+void PerspectiveCamera::setProjection(float fov, float aspectRatio, float zNear, float zFar) {
 	m_Zoom = fov;
 	m_AspectRatio = aspectRatio;
 	m_Near = zNear;
 	m_Far = zFar;
-	RecalculateProjection();
+	recalculateProjection();
 }
 
-void PerspectiveCamera::SetPosition(glm::vec3 pos) {
+void PerspectiveCamera::setPosition(glm::vec3 pos) {
 	m_Position = pos;
-	RecalculateView();
+	recalculateView();
 }
 
-void PerspectiveCamera::RecalculateProjection() {
+void PerspectiveCamera::recalculateProjection() {
 	m_ProjectionMatrix = glm::perspective(glm::radians(m_Zoom), m_AspectRatio, m_Near, m_Far);
 	m_ViewProjectionMatrix = m_ProjectionMatrix * m_ViewMatrix;
 }
 
-void PerspectiveCamera::RecalculateView() {
+void PerspectiveCamera::recalculateView() {
 	m_ViewMatrix = glm::lookAt(m_Position, m_Position + m_Front, m_Up);
 	m_ViewProjectionMatrix = m_ProjectionMatrix * m_ViewMatrix;
 }
 
-void PerspectiveCamera::UpdateCameraVectors() {
+void PerspectiveCamera::updateCameraVectors() {
 	// Calculate the new Front vector
 	glm::vec3 front{};
 	front.x = cos(glm::radians(m_Yaw)) * cos(glm::radians(m_Pitch));
@@ -44,5 +44,5 @@ void PerspectiveCamera::UpdateCameraVectors() {
 	m_Right = glm::normalize(glm::cross(m_Front, glm::vec3(0.0f, 1.0f, 0.0f)));
 	m_Up = glm::normalize(glm::cross(m_Right, m_Front));
 
-	RecalculateView();
+	recalculateView();
 }

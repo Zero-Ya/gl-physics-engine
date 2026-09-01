@@ -26,7 +26,7 @@ void CollisionSimulation2D::init(size_t initialCircleCount) {
         float velX = ((rand() % 10) / 10.0f - 0.5f) * 1.0f;
         float velY = ((rand() % 10) / 10.0f - 0.5f) * 1.0f;
 
-        spawnCircle(glm::vec2(2.5f, 2.5f), glm::vec2(velX, velY), 0.1f);
+        spawnCircle(glm::vec2(3.5f, 2.5f), glm::vec2(velX, velY), 0.1f);
     }
 }
 

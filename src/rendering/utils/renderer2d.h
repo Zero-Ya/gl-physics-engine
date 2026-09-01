@@ -7,8 +7,8 @@
 
 #include "scene/scene.h"
 #include "shader.h"
-#include "rendering/2D/circle_renderer.h"
-#include "rendering/2D/line_renderer.h"
+#include "rendering/2D/circle_renderer2d.h"
+#include "rendering/2D/line_renderer2d.h"
 
 class Renderer2D {
 public:

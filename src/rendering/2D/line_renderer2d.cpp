@@ -1,4 +1,4 @@
-#include "line_renderer.h"
+#include "line_renderer2d.h"
 
 #include <glad/glad.h>
 #include <iostream>
@@ -7,7 +7,7 @@ void LineRenderer::init() {
     m_LineBatch.reserve(MAX_VERTICES);
 
     // Create the shader
-    m_LineShader = std::make_unique<Shader>("assets/shaders/line_renderer2d.vert", "assets/shaders/line_renderer2d.frag");
+    m_LineShader = std::make_unique<Shader>("assets/shaders/2D/line_renderer2d.vert", "assets/shaders/2D/line_renderer2d.frag");
 
     glGenVertexArrays(1, &m_VAO);
     glGenBuffers(1, &m_VBO);
@@ -59,6 +59,7 @@ void LineRenderer::flush(const glm::mat4& projection) {
     glBufferSubData(GL_ARRAY_BUFFER, 0, dataSize, m_LineBatch.data());
 
     size_t vertexCount = static_cast<GLsizei>(m_LineBatch.size());
+    glLineWidth(2.0f);
     glDrawArrays(GL_LINES, 0, vertexCount);
 
     glBindVertexArray(0);

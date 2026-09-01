@@ -2,7 +2,7 @@
 
 #include <glm/glm.hpp>
 #include "spatial_grid.h"
-#include "rendering/2D/line_renderer.h"
+#include "rendering/2D/line_renderer2d.h"
 
 class SpatialGridDebugRenderer {
 public:

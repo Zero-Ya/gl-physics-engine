@@ -9,7 +9,10 @@
 #include "ui/panels/profiler_panel.h"
 
 #include "rendering/utils/renderer2d.h"
+#include "rendering/utils/renderer3d.h"
 #include "physics/2D/spatial_grid.h"
+
+#include "rendering/utils/perspective_camera_controller.h"
 
 #include "physics/physics_engine.h"
 
@@ -38,6 +41,7 @@ public:
 	int getWidth() const { return m_Width; }
 	int getHeight() const { return m_Height; }
 
+	void renderCurrentSimulation();
 
 private:
 	void update(float dt);
@@ -60,8 +64,11 @@ private:
 	std::unique_ptr<ProfilerPanel> m_ProfilerPanel;
 	std::unique_ptr<ImGuiLayer> m_ImGuiLayer;
 
-	std::unique_ptr<Renderer2D> m_Renderer;
+	std::unique_ptr<Renderer2D> m_Renderer2D;
+	std::unique_ptr<Renderer3D> m_Renderer3D;
 	std::unique_ptr<SpatialGrid> m_SpatialGrid;
+
+	std::unique_ptr<PerspectiveCameraController> m_CameraController;
 
 	std::unique_ptr<PhysicsEngine> m_PhysicsEngine;
 
