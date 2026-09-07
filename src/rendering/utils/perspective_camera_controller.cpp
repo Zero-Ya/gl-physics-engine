@@ -10,7 +10,7 @@ PerspectiveCameraController::PerspectiveCameraController(float aspectRatio)
     : m_AspectRatio(aspectRatio),
     m_Camera(45.0f, aspectRatio, 0.1f, 100.0f),
     m_MovementSpeed(5.0f),
-    m_MouseSensitivity(0.35f),
+    m_MouseSensitivity(0.25f),
     m_Zoom(45.0f)
 {}
 

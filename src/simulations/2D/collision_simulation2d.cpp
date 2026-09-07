@@ -14,7 +14,7 @@ CollisionSimulation2D::CollisionSimulation2D(SpatialGrid& spatialGrid)
 {}
 
 void CollisionSimulation2D::init(size_t initialCircleCount) {
-    m_Scene = std::make_unique<Scene>();
+    m_Scene2D = std::make_unique<Scene2D>();
 
     neighborCellIndices.reserve(9);
     clear();
@@ -50,22 +50,22 @@ void CollisionSimulation2D::update(float dt) {
 }
 
 void CollisionSimulation2D::clear() {
-    m_Scene->clearEntities();
+    m_Scene2D->clearEntities();
     neighborCellIndices.clear();
 }
 
 void CollisionSimulation2D::spawnCircle(const glm::vec2& position, const glm::vec2& velocity, float radius) {
-    m_Scene->createCircleEntity("Circle", position, velocity, radius);
+    m_Scene2D->createCircleEntity("Circle", position, velocity, radius);
 }
 
 void CollisionSimulation2D::integrateMotion(float dt) {
-    for (auto& obj : m_Scene->getEntities()) {
+    for (auto& obj : m_Scene2D->getEntities()) {
         Integrator2D::integrate(obj.get(), dt, m_Gravity);
     }
 }
 
 void CollisionSimulation2D::resolveCollisions() {
-    const auto& entities = m_Scene->getEntities();
+    const auto& entities = m_Scene2D->getEntities();
     size_t entityCount = entities.size();
 
     for (size_t i = 0; i < entityCount; ++i) {
@@ -85,15 +85,15 @@ void CollisionSimulation2D::resolveCollisions() {
 }
 
 void CollisionSimulation2D::resolveBoundaryCollisions() {
-    for (auto& obj : m_Scene->getEntities()) {
+    for (auto& obj : m_Scene2D->getEntities()) {
         BoundarySolver2D::resolveCollision(obj.get(), m_WorldMin, m_WorldMax);
     }
 }
 
 void CollisionSimulation2D::buildSpatialGrid() {
     m_SpatialGrid.clear();
-    for (size_t i = 0; i < m_Scene->getEntityCount(); ++i) {
-        m_SpatialGrid.insert(i, m_Scene->getEntities()[i].get()->getComponent<Transform2D>()->position);
+    for (size_t i = 0; i < m_Scene2D->getEntityCount(); ++i) {
+        m_SpatialGrid.insert(i, m_Scene2D->getEntities()[i].get()->getComponent<Transform2D>()->position);
     }
 }
 

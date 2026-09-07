@@ -47,9 +47,10 @@ void QuadRenderer3D::shutdown() const {
 	if (m_EBO) glDeleteBuffers(1, &m_EBO);
 }
 
-void QuadRenderer3D::drawQuad(const glm::vec2& position, const glm::vec3& color, const glm::vec2& size, const glm::mat4& projection) {
+void QuadRenderer3D::drawQuad(const glm::vec3& position, const glm::vec3& color, const glm::vec2& size, const glm::mat4& projection) {
 	glm::mat4 model = glm::mat4(1.0f);
-	model = glm::translate(model, glm::vec3(position, 1.0f));
+	model = glm::translate(model, glm::vec3(position));
+	model = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
 	model = glm::scale(model, glm::vec3(size, 1.0f));
 
 	m_QuadShader->use();

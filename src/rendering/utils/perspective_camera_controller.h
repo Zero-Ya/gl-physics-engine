@@ -15,7 +15,7 @@ private:
 	float m_AspectRatio = 1.778f;
 	float m_Zoom = 45.0f;
 
-	glm::vec3 m_CameraPosition = { 0.0f, 0.0f, 2.0f };
+	glm::vec3 m_CameraPosition = { 0.0f, 5.0f, 10.0f };
 	float m_Yaw = -90.0f;
 	float m_Pitch = 0.0f;
 

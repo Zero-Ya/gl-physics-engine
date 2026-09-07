@@ -12,7 +12,7 @@ public:
 	void init();
 	void shutdown() const;
 
-	void drawQuad(const glm::vec2& position, const glm::vec3& color, const glm::vec2& size, const glm::mat4& projection);
+	void drawQuad(const glm::vec3& position, const glm::vec3& color, const glm::vec2& size, const glm::mat4& projection);
 
 private:
 	unsigned int m_VAO, m_VBO, m_EBO;

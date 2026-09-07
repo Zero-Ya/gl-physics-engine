@@ -8,14 +8,6 @@
 #include "scene/scene.h"
 #include "physics/2D/spatial_grid.h"
 
-struct CircleEntity {
-    glm::vec2 position;
-    glm::vec2 velocity;
-    float radius;
-    float mass;
-    glm::vec4 color;
-};
-
 class CollisionSimulation2D {
 public:
     CollisionSimulation2D(SpatialGrid& spatialGrid);
@@ -30,8 +22,8 @@ public:
 
     // Performance Tracking & Debug Overlays
     float getLastExecutionTimeMs() const { return m_PhysicsTimeMs; }
-    size_t getEntityCount() const { return m_Scene->getEntityCount(); }
-    std::vector<std::unique_ptr<GameObject>>& getCircles() const { return m_Scene->getEntities(); }
+    size_t getEntityCount() const { return m_Scene2D->getEntityCount(); }
+    std::vector<std::unique_ptr<GameObject>>& getCircles() const { return m_Scene2D->getEntities(); }
     const float& getPhysicsTimeMs() const { return m_PhysicsTimeMs; }
 
     // Physics Parameters
@@ -51,13 +43,12 @@ private:
     void buildSpatialGrid();
 
 private:
-    std::unique_ptr<Scene> m_Scene;
+    std::unique_ptr<Scene2D> m_Scene2D;
     SpatialGrid& m_SpatialGrid;
     std::vector<size_t> neighborCellIndices;
 
     // World Constraints
-    glm::vec2 m_Gravity { 0.0f, 0.0f }; // Zero gravity
-    //glm::vec2 m_Gravity{ 0.0f, -9.81f };
+    glm::vec2 m_Gravity { 0.0f, 0.0f };
     glm::vec2 m_WorldMin { 0.0f, 0.0f };
     glm::vec2 m_WorldMax { 10.0f,  10.0f };
 

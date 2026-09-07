@@ -16,6 +16,8 @@
 
 #include "physics/physics_engine.h"
 
+#include "simulations/3D/collision_simulation3d.h"
+
 const float m_CellSize = 0.375f;
 
 struct GLFWwindow;
@@ -71,6 +73,8 @@ private:
 	std::unique_ptr<PerspectiveCameraController> m_CameraController;
 
 	std::unique_ptr<PhysicsEngine> m_PhysicsEngine;
+
+	std::unique_ptr<CollisionSimulation3D> m_Collision3D;
 
 	bool isLeftDragging = false;
 	bool isRightDragging = false;

@@ -4,7 +4,7 @@
 
 #include "rendering/utils/shader.h"
 
-struct CircleData {
+struct CircleInstanceData {
     glm::vec2 position;
     glm::vec3 color;
     float radius;
@@ -22,12 +22,12 @@ public:
     void flush(const glm::mat4& projection);
 
 private:
-    std::vector<CircleData> m_CircleBatch;
-
+    std::vector<CircleInstanceData> m_CircleBatch;
     static constexpr size_t MAX_CIRCLES = 10000;
 
 	unsigned int m_VAO, m_EBO;
     unsigned int m_QuadVBO = 0;
     unsigned int m_InstanceVBO = 0;
+
 	std::unique_ptr<Shader> m_CircleShader;
 };

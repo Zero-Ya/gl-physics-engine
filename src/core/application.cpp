@@ -33,7 +33,7 @@ Application::Application(const char* title, int width, int height)
     m_Renderer3D = std::make_unique<Renderer3D>();
     m_SpatialGrid = std::make_unique<SpatialGrid>(m_VirtualWidth, m_VirtualHeight, m_CellSize);
 
-    m_CameraController = std::make_unique<PerspectiveCameraController>(1280.0f / 720.0f);
+    m_CameraController = std::make_unique<PerspectiveCameraController>(aspectRatio);
 
     // Renderer init
     m_Renderer2D->init();
@@ -41,8 +41,11 @@ Application::Application(const char* title, int width, int height)
     m_Renderer3D->init();
 
     // Physics engine init
-    m_PhysicsEngine = std::make_unique<PhysicsEngine>(*m_SpatialGrid, *m_ProfilerPanel, *m_Renderer2D, *m_Renderer3D);
-    m_PhysicsEngine->init(m_VirtualWidth, m_VirtualHeight, m_CellSize);
+    //m_PhysicsEngine = std::make_unique<PhysicsEngine>(*m_SpatialGrid, *m_ProfilerPanel, *m_Renderer2D, *m_Renderer3D);
+    //m_PhysicsEngine->init(m_VirtualWidth, m_VirtualHeight, m_CellSize);
+
+    m_Collision3D = std::make_unique<CollisionSimulation3D>();
+    m_Collision3D->init(15);
 }
 
 Application::~Application() {
@@ -55,7 +58,7 @@ bool Application::isRunning() const {
 
 void Application::clearScreen(float r, float g, float b, float a) const {
     glClearColor(r, g, b, a);
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 }
 
 void Application::swapBuffers() const {
@@ -73,7 +76,10 @@ void Application::onWindowResize(int width, int height) {
     m_VirtualWidth = m_VirtualHeight * aspectRatio;
 
     m_Renderer2D->setOrthographicProjection(0.0f, m_VirtualWidth, 0.0f, m_VirtualHeight);
-    m_PhysicsEngine->resize(m_VirtualWidth, m_VirtualHeight, m_CellSize);
+    //m_PhysicsEngine->resize(m_VirtualWidth, m_VirtualHeight, m_CellSize);
+
+    auto& camera = m_CameraController->getCamera();
+    camera.setProjection(45.0f, aspectRatio, 0.1f, 100.0f);
 }
 
 void Application::initWindow(const char* title) {
@@ -132,19 +138,26 @@ void Application::run() {
 
         // Inputs stuff here
         processInput();
+        m_Collision3D->processInput();
 
-        m_Renderer2D->beginFrame();
-        //m_Renderer3D->beginFrame(m_CameraController->getCamera());
+        //m_Renderer2D->beginFrame();
 
-        update(dt);
+        m_Renderer3D->beginFrame(m_CameraController->getCamera());
+
+        //update(dt);
+        m_Collision3D->update(dt);
 
         render();
+        m_Renderer3D->drawQuad({0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {50.0f, 50.0f});
+        m_Renderer3D->drawDome({0.0f, 2.0f, 0.0f}, {1.0f, 1.0f, 1.0f}, 2.0f);
+        m_Renderer3D->drawSpheres(m_Collision3D->getSpheres());
 
-        m_Renderer2D->submit();
+        //m_Renderer2D->submit();
+        m_Renderer3D->endFrame();
 
         // ImGui render /////////////
         m_ImGuiLayer->beginFrame();
-        m_PhysicsEngine->renderUI(m_VirtualWidth, m_VirtualHeight, m_CellSize);
+        //m_PhysicsEngine->renderUI(m_VirtualWidth, m_VirtualHeight, m_CellSize);
         //m_PhysicsEngine->renderProfilerPanel(lastTotalFrameTimeMs);
         //m_PhysicsEngine->renderSimulationControl(m_VirtualWidth, m_VirtualHeight, m_CellSize);
         m_ImGuiLayer->endFrame();
@@ -192,14 +205,17 @@ void Application::run() {
 
 void Application::update(float dt) {
     // Physics engine update
-    m_PhysicsEngine->update(dt);
+    //m_PhysicsEngine->update(dt);
 }
 
 void Application::render() {
     clearScreen(0.2f, 0.3f, 0.3f, 1.0f);
 
-    //m_Renderer3D->drawQuad({0.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {1.0f, 1.0f});
-    m_PhysicsEngine->render();
+    //m_Renderer3D->drawSphere({ 0.0f, 0.0f, 0.0f }, { 1.0f, 0.0f, 0.0f }, 1.0f);
+    //m_Renderer3D->drawSphere({ 4.0f, 2.0f, 0.0f }, { 0.0f, 1.0f, 0.0f }, 1.0f);
+    //m_Renderer3D->drawSphere({ 0.0f, 0.0f, 5.0f }, { 0.0f, 0.0f, 1.0f }, 1.0f);
+
+    //m_PhysicsEngine->render();
 }
 
 void Application::processInput() {
@@ -211,7 +227,7 @@ void Application::processInput() {
     }
 
     glm::vec2 clickPos = screenToWorld(Input::getMousePosition(), m_Width, m_Height, m_VirtualWidth, m_VirtualHeight);
-    m_PhysicsEngine->processInput(clickPos, isLeftDragging, isRightDragging);
+    //m_PhysicsEngine->processInput(clickPos, isLeftDragging, isRightDragging);
 }
 
 // 2D screen to world

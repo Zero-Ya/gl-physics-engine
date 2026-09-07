@@ -45,24 +45,23 @@ void CircleRenderer::init() {
 	// Dynamic instance VBO
 	glGenBuffers(1, &m_InstanceVBO);
 	glBindBuffer(GL_ARRAY_BUFFER, m_InstanceVBO);
-	glBufferData(GL_ARRAY_BUFFER, MAX_CIRCLES * sizeof(CircleData), nullptr, GL_DYNAMIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, MAX_CIRCLES * sizeof(CircleInstanceData), nullptr, GL_DYNAMIC_DRAW);
 
-	// Instanced attribute setup
-	uint32_t stride = sizeof(CircleData);
+	uint32_t stride = sizeof(CircleInstanceData);
 
 	// Attribute 2: Position
 	glEnableVertexAttribArray(2);
-	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, stride, (void*)offsetof(CircleData, position));
+	glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, stride, (void*)offsetof(CircleInstanceData, position));
 	glVertexAttribDivisor(2, 1); // Step once per instance
 
 	// Attribute 3: Color
 	glEnableVertexAttribArray(3);
-	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, stride, (void*)offsetof(CircleData, color));
+	glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, stride, (void*)offsetof(CircleInstanceData, color));
 	glVertexAttribDivisor(3, 1);
 
 	// Attribute 4: Radius
 	glEnableVertexAttribArray(4);
-	glVertexAttribPointer(4, 1, GL_FLOAT, GL_FALSE, stride, (void*)offsetof(CircleData, radius));
+	glVertexAttribPointer(4, 1, GL_FLOAT, GL_FALSE, stride, (void*)offsetof(CircleInstanceData, radius));
 	glVertexAttribDivisor(4, 1);
 
 	glBindVertexArray(0);
@@ -99,7 +98,7 @@ void CircleRenderer::flush(const glm::mat4& projection) {
 
 	// Upload CPU instance array directly to Instance VBO
 	glBindBuffer(GL_ARRAY_BUFFER, m_InstanceVBO);
-	GLsizeiptr dataSize = m_CircleBatch.size() * sizeof(CircleData);
+	GLsizeiptr dataSize = m_CircleBatch.size() * sizeof(CircleInstanceData);
 	glBufferSubData(GL_ARRAY_BUFFER, 0, dataSize, m_CircleBatch.data());
 
 	// Issue ONE instanced draw call for all accumulated circles

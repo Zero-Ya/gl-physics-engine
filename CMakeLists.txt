@@ -24,6 +24,8 @@ file(GLOB_RECURSE MAIN_SOURCES CONFIGURE_DEPENDS
 	"${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp"
 	"${CMAKE_CURRENT_SOURCE_DIR}/src/*.c"
 	"${CMAKE_CURRENT_SOURCE_DIR}/src/*.h"
+
+	dependencies/stb/stb_image.cpp
 )
 target_sources(main PRIVATE ${MAIN_SOURCES} ${IMGUI_SOURCES})
 
@@ -35,6 +37,7 @@ target_include_directories(main PRIVATE
 	dependencies/imgui
 	dependencies/imgui/backends
 	dependencies/glm
+	dependencies/stb
 )
 
 # Link static libs
