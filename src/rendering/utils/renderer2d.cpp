@@ -20,13 +20,12 @@ void Renderer2D::shutdown() {
 
 
 void Renderer2D::beginFrame() {
+	glDisable(GL_DEPTH_TEST);
+	glDisable(GL_CULL_FACE);
+	glDepthMask(GL_FALSE);
 }
 
 void Renderer2D::endFrame() {
-
-}
-
-void Renderer2D::submit() {
 	m_LineRenderer->flush(m_ProjectionMatrix);
 	m_CircleRenderer->flush(m_ProjectionMatrix);
 }

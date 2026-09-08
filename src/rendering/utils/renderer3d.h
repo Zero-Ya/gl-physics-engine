@@ -23,7 +23,6 @@ public:
 
 	void beginFrame(PerspectiveCamera& camera);
 	void endFrame();
-	void submit();
 
 	void drawQuad(const glm::vec3& position, const glm::vec3& color, const glm::vec2& size);
 	void drawDome(const glm::vec3& position, const glm::vec3& color, float radius);

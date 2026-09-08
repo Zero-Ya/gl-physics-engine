@@ -32,10 +32,6 @@ void Renderer3D::endFrame() {
 	m_SphereRenderer->flush(m_ProjectionMatrix);
 }
 
-void Renderer3D::submit() {
-
-}
-
 void Renderer3D::drawQuad(const glm::vec3& position, const glm::vec3& color, const glm::vec2& size) {
 	m_QuadRenderer->drawQuad(position, color, size, m_ProjectionMatrix);
 }

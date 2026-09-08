@@ -16,8 +16,6 @@
 
 #include "physics/physics_engine.h"
 
-#include "simulations/3D/collision_simulation3d.h"
-
 const float m_CellSize = 0.375f;
 
 struct GLFWwindow;
@@ -42,8 +40,6 @@ public:
 	// Dimension getters
 	int getWidth() const { return m_Width; }
 	int getHeight() const { return m_Height; }
-
-	void renderCurrentSimulation();
 
 private:
 	void update(float dt);
@@ -73,8 +69,6 @@ private:
 	std::unique_ptr<PerspectiveCameraController> m_CameraController;
 
 	std::unique_ptr<PhysicsEngine> m_PhysicsEngine;
-
-	std::unique_ptr<CollisionSimulation3D> m_Collision3D;
 
 	bool isLeftDragging = false;
 	bool isRightDragging = false;

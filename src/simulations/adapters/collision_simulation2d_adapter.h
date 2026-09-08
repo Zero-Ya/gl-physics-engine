@@ -11,7 +11,7 @@
 
 class CollisionSimulation2DAdapter : public SimulationInterface {
 public:
-    CollisionSimulation2DAdapter(SpatialGrid& spatialGrid, Renderer2D& renderer) : m_Renderer(renderer), m_CollisionSolver(spatialGrid) {}
+    CollisionSimulation2DAdapter(SpatialGrid& spatialGrid, Renderer2D& renderer) : m_Renderer(renderer), m_CollisionSolver(spatialGrid), m_SpatialGrid(spatialGrid) {}
 
     void init(float virtualWidth, float virtualHeight, float cellSize) override {
         m_CollisionSolver.init(100);
@@ -56,12 +56,19 @@ public:
         ImGui::End();
     }
 
-    bool is3D() const override { return true; }
+    void renderProfilerPanel(ProfilerPanel& profilerPanel, float lastTotalFrameTimeMs) override {
+        if (profilerPanel.isDebugGridEnabled()) {
+            SpatialGridDebugRenderer::draw(m_SpatialGrid, *m_Renderer.getLineRenderer().get(), true);
+        }
+        profilerPanel.onImGuiRender(lastTotalFrameTimeMs, m_CollisionSolver.getPhysicsTimeMs(), m_CollisionSolver.getEntityCount(), true);
+    }
+
+    bool is3D() const override { return false; }
 
     Dimension getDimension() const override { return Dimension::TwoD; }
 
 private:
     CollisionSimulation2D m_CollisionSolver; // Internal solver
     Renderer2D& m_Renderer;
-
+    SpatialGrid& m_SpatialGrid;
 };

@@ -20,7 +20,6 @@ public:
 
 	void beginFrame();
 	void endFrame();
-	void submit();
 
 	void drawLine(const glm::vec2& p1, const glm::vec2& p2, const glm::vec3& color);
 	void drawCircle(const glm::vec2& position, const glm::vec3& color, float radius);

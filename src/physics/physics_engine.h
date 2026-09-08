@@ -1,6 +1,7 @@
 #pragma once
 
 #include "physics/2D/spatial_grid.h"
+#include "physics/2D/spatial_grid_debug_renderer.h"
 
 #include "ui/panels/profiler_panel.h"
 #include "rendering/utils/renderer2d.h"
@@ -9,11 +10,13 @@
 #include "simulations/simulation_interface.h"
 #include "simulations/adapters/collision_simulation2d_adapter.h"
 #include "simulations/adapters/cloth_simulation2d_adapter.h"
+#include "simulations/adapters/collision_simulation3d_adapter.h"
 
 enum class SimulationType {
 	None,
 	Collision2D,
 	Cloth2D,
+    Collision3D,
 };
 
 class PhysicsEngine {
@@ -53,6 +56,7 @@ public:
 
     void switchSimulation(SimulationType newType, float virtualWidth, float virtualHeight, float cellSize);
     void renderUI(float virtualWidth, float virtualHeight, float cellSize);
+    void renderProfilerPanel(float lastTotalFrameTimeMs);
 
     // Getters
     SimulationType getSimulationType() const { return m_SimulationType; }

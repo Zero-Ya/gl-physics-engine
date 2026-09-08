@@ -15,19 +15,7 @@ glm::vec3 getVelAtPoint(RigidBody3D* rb, glm::vec3 localPoint);
 void CollisionSimulation3D::init(size_t initialSphereCount) {
     m_Scene3D = std::make_unique<Scene3D>();
 
-    clear();
-
-    for (size_t i = 0; i < initialSphereCount; ++i) {
-        float posX = ((rand() % 1000) / 1000.0f) * (2.0f - 0.0f) - 1.0f;
-        float posY = ((rand() % 1000) / 1000.0f) * (2.0f - 0.0f) + 1.0f;
-        float posZ = ((rand() % 1000) / 1000.0f) * (2.0f - 0.0f) - 1.0f;
-        float velX = ((rand() % 10) / 10.0f - 0.5f) * 5.0f;
-        float velY = ((rand() % 10) / 10.0f - 0.5f) * 5.0f;
-        float velZ = ((rand() % 10) / 10.0f - 0.5f) * 5.0f;
-
-        spawnSphere(glm::vec3(posX, posY, posZ), glm::vec3(velX, velY, velZ), 0.1f);
-    }
-
+    resize(initialSphereCount);
 }
 
 void CollisionSimulation3D::update(float dt) {
@@ -296,43 +284,23 @@ void CollisionSimulation3D::resolveCollision(RigidBody3D* rb1, RigidBody3D* rb2,
     applyForceAtPoint(rb2, -tangentialForce, localContactPoint2);
 }
 
-void CollisionSimulation3D::processInput() {
-    // Torque in X axis
-    if (Input::isKeyHeld(GLFW_KEY_1)) {
-        applyTorques(glm::vec3(1.0f, 0.0f, 0.0f));
-    }
-
-    // Torque in Y axis
-    if (Input::isKeyHeld(GLFW_KEY_2)) {
-        applyTorques(glm::vec3(0.0f, 1.0f, 0.0f));
-    }
-
-    // Torque in Z axis
-    if (Input::isKeyHeld(GLFW_KEY_3)) {
-        applyTorques(glm::vec3(0.0f, 0.0f, 1.0f));
-    }
-
-    if (Input::isKeyHeld(GLFW_KEY_UP)) {
-        applyForces(glm::vec3(0.0f, 0.0f, -100.0f));
-    }
-    if (Input::isKeyHeld(GLFW_KEY_DOWN)) {
-        applyForces(glm::vec3(0.0f, 0.0f, 100.0f));
-    }
-    if (Input::isKeyHeld(GLFW_KEY_RIGHT)) {
-        applyForces(glm::vec3(100.0f, 0.0f, 0.0f));
-    }
-    if (Input::isKeyHeld(GLFW_KEY_LEFT)) {
-        applyForces(glm::vec3(-100.0f, 0.0f, 0.0f));
-    }
-
-    // Force in Y axis
-    if (Input::isKeyHeld(GLFW_KEY_SPACE)) {
-        applyForces(glm::vec3(0.0f, 200.0f, 0.0f));
-    }
-}
-
 void CollisionSimulation3D::clear() {
     m_Scene3D->clearEntities();
+}
+
+void CollisionSimulation3D::resize(size_t newSphereCount) {
+    clear();
+
+    for (size_t i = 0; i < newSphereCount; ++i) {
+        float posX = ((rand() % 1000) / 1000.0f) * (2.0f - 0.0f) - 1.0f;
+        float posY = ((rand() % 1000) / 1000.0f) * (2.0f - 0.0f) + 1.0f;
+        float posZ = ((rand() % 1000) / 1000.0f) * (2.0f - 0.0f) - 1.0f;
+        float velX = ((rand() % 10) / 10.0f - 0.5f) * 5.0f;
+        float velY = ((rand() % 10) / 10.0f - 0.5f) * 5.0f;
+        float velZ = ((rand() % 10) / 10.0f - 0.5f) * 5.0f;
+
+        spawnSphere(glm::vec3(posX, posY, posZ), glm::vec3(velX, velY, velZ), 0.1f);
+    }
 }
 
 void CollisionSimulation3D::spawnSphere(const glm::vec3& position, const glm::vec3& velocity, float radius) {

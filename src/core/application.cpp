@@ -41,11 +41,8 @@ Application::Application(const char* title, int width, int height)
     m_Renderer3D->init();
 
     // Physics engine init
-    //m_PhysicsEngine = std::make_unique<PhysicsEngine>(*m_SpatialGrid, *m_ProfilerPanel, *m_Renderer2D, *m_Renderer3D);
-    //m_PhysicsEngine->init(m_VirtualWidth, m_VirtualHeight, m_CellSize);
-
-    m_Collision3D = std::make_unique<CollisionSimulation3D>();
-    m_Collision3D->init(15);
+    m_PhysicsEngine = std::make_unique<PhysicsEngine>(*m_SpatialGrid, *m_ProfilerPanel, *m_Renderer2D, *m_Renderer3D);
+    m_PhysicsEngine->init(m_VirtualWidth, m_VirtualHeight, m_CellSize);
 }
 
 Application::~Application() {
@@ -76,7 +73,7 @@ void Application::onWindowResize(int width, int height) {
     m_VirtualWidth = m_VirtualHeight * aspectRatio;
 
     m_Renderer2D->setOrthographicProjection(0.0f, m_VirtualWidth, 0.0f, m_VirtualHeight);
-    //m_PhysicsEngine->resize(m_VirtualWidth, m_VirtualHeight, m_CellSize);
+    m_PhysicsEngine->resize(m_VirtualWidth, m_VirtualHeight, m_CellSize);
 
     auto& camera = m_CameraController->getCamera();
     camera.setProjection(45.0f, aspectRatio, 0.1f, 100.0f);
@@ -133,33 +130,38 @@ void Application::run() {
         //
         glfwPollEvents();
 
-        // Camera update
-        m_CameraController->onUpdate(dt);
-
         // Inputs stuff here
         processInput();
-        m_Collision3D->processInput();
 
-        //m_Renderer2D->beginFrame();
+        if (!m_PhysicsEngine->getCurrentSimulation()) { // SimulationType::None
+            render();
+        }
+        else if (m_PhysicsEngine->getCurrentSimulation()->is3D()) {
+            m_CameraController->onUpdate(dt);
 
-        m_Renderer3D->beginFrame(m_CameraController->getCamera());
+            m_Renderer3D->beginFrame(m_CameraController->getCamera());
 
-        //update(dt);
-        m_Collision3D->update(dt);
+            update(dt);
+            render();
 
-        render();
-        m_Renderer3D->drawQuad({0.0f, 0.0f, 0.0f}, {0.0f, 0.0f, 1.0f}, {50.0f, 50.0f});
-        m_Renderer3D->drawDome({0.0f, 2.0f, 0.0f}, {1.0f, 1.0f, 1.0f}, 2.0f);
-        m_Renderer3D->drawSpheres(m_Collision3D->getSpheres());
+            m_Renderer3D->drawQuad({ 0.0f, 0.0f, 0.0f }, { 0.0f, 0.0f, 1.0f }, { 50.0f, 50.0f });
+            m_Renderer3D->drawDome({ 0.0f, 2.0f, 0.0f }, { 1.0f, 1.0f, 1.0f }, 2.0f);
 
-        //m_Renderer2D->submit();
-        m_Renderer3D->endFrame();
+            m_Renderer3D->endFrame();
+        }
+        else {
+            m_Renderer2D->beginFrame();
+
+            update(dt);
+            render();
+
+            m_Renderer2D->endFrame();
+        }
 
         // ImGui render /////////////
         m_ImGuiLayer->beginFrame();
-        //m_PhysicsEngine->renderUI(m_VirtualWidth, m_VirtualHeight, m_CellSize);
-        //m_PhysicsEngine->renderProfilerPanel(lastTotalFrameTimeMs);
-        //m_PhysicsEngine->renderSimulationControl(m_VirtualWidth, m_VirtualHeight, m_CellSize);
+        m_PhysicsEngine->renderUI(m_VirtualWidth, m_VirtualHeight, m_CellSize);
+        m_PhysicsEngine->renderProfilerPanel(lastTotalFrameTimeMs);
         m_ImGuiLayer->endFrame();
         /////////////////////////////
 
@@ -171,51 +173,15 @@ void Application::run() {
     }
 }
 
-//void Application::renderCurrentSimulation() {
-//    int width, height;
-//    glfwGetFramebufferSize(m_Window, &width, &height);
-//    float aspectRatio = static_cast<float>(width) / static_cast<float>(height);
-//
-//    if (m_CurrentSim->is3D()) {
-//        // 3D render setup
-//        glEnable(GL_DEPTH_TEST);
-//        glEnable(GL_CULL_FACE);
-//
-//        // Compute 3D View Projection
-//        glm::mat4 view = m_Camera->getViewMatrix();
-//        glm::mat4 proj = m_Camera->getProjectionMatrix(aspectRatio);
-//
-//        m_CurrentSim->render(view, proj);
-//    }
-//    else {
-//        // 2D render setup
-//        glDisable(GL_DEPTH_TEST);
-//        glDisable(GL_CULL_FACE);
-//
-//        float orthoHeight = 10.0f;
-//        glm::mat4 view = glm::mat4(1.0f);
-//        glm::mat4 proj = glm::ortho(0.0f, orthoHeight * aspectRatio, 0.0f, orthoHeight, -1.0f, 1.0f);
-//
-//        m_CurrentSim->render(view, proj);
-//    }
-//
-//    // Render ImGui UI on top of either pipeline
-//    renderUI();
-//}
-
 void Application::update(float dt) {
     // Physics engine update
-    //m_PhysicsEngine->update(dt);
+    m_PhysicsEngine->update(dt);
 }
 
 void Application::render() {
     clearScreen(0.2f, 0.3f, 0.3f, 1.0f);
 
-    //m_Renderer3D->drawSphere({ 0.0f, 0.0f, 0.0f }, { 1.0f, 0.0f, 0.0f }, 1.0f);
-    //m_Renderer3D->drawSphere({ 4.0f, 2.0f, 0.0f }, { 0.0f, 1.0f, 0.0f }, 1.0f);
-    //m_Renderer3D->drawSphere({ 0.0f, 0.0f, 5.0f }, { 0.0f, 0.0f, 1.0f }, 1.0f);
-
-    //m_PhysicsEngine->render();
+    m_PhysicsEngine->render();
 }
 
 void Application::processInput() {
@@ -227,7 +193,7 @@ void Application::processInput() {
     }
 
     glm::vec2 clickPos = screenToWorld(Input::getMousePosition(), m_Width, m_Height, m_VirtualWidth, m_VirtualHeight);
-    //m_PhysicsEngine->processInput(clickPos, isLeftDragging, isRightDragging);
+    m_PhysicsEngine->processInput(clickPos, isLeftDragging, isRightDragging);
 }
 
 // 2D screen to world

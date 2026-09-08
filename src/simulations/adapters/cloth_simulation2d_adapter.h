@@ -141,7 +141,11 @@ public:
         ImGui::End();
     }
 
-    bool is3D() const override { return true; }
+    void renderProfilerPanel(ProfilerPanel& profilerPanel, float lastTotalFrameTimeMs) override {
+        profilerPanel.onImGuiRender(lastTotalFrameTimeMs, m_ClothSolver.getPhysicsTimeMs(), m_ClothSolver.getParticleCount(), false);
+    }
+
+    bool is3D() const override { return false; }
 
     Dimension getDimension() const override { return Dimension::TwoD; }
 

@@ -19,6 +19,7 @@ public:
 	void init(size_t initialSphereCount);
 	void update(float dt);
 	void clear();
+    void resize(size_t newSphereCount);
 
     // Scene & Debug Management
     void spawnSphere(const glm::vec3& position, const glm::vec3& velocity, float radius);
@@ -32,16 +33,14 @@ public:
     // Physics Parameters
     void setGravity(const glm::vec3& gravity) { m_Gravity = gravity; }
 
-    void processInput();
+    void applyForces(glm::vec3 force);
+    void applyTorques(glm::vec3 torque);
 
 private:
     void integrate(float dt);
 
     void applyForce(RigidBody3D* rb, glm::vec3 force);
     void applyTorque(RigidBody3D* rb, glm::vec3 torque);
-
-    void applyForces(glm::vec3 force);
-    void applyTorques(glm::vec3 torque);
 
     void applyForceAtPoint(RigidBody3D* rb, glm::vec3 force, glm::vec3 localPoint);
 
@@ -54,8 +53,6 @@ private:
 
     // World Constraints
     glm::vec3 m_Gravity{ 0.0f, -9.81f, 0.0f };
-    glm::vec3 m_WorldMin{ 0.0f, 0.0f, 0.0f };
-    glm::vec3 m_WorldMax{ 10.0f,  10.0f, 0.0f };
 
     float friction = 0.5f;
     int solverSubsteps = 10; // Multiple substeps prevent high-speed tunneling

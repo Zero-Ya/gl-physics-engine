@@ -21,6 +21,7 @@ public:
 	// Inputs and UI
 	virtual void processInput(const glm::vec2& clickPos, bool& isLeftDragging, bool& isRightDragging) = 0;
 	virtual void renderUI(float virtualWidth, float virtualHeight, float cellSize) = 0;
+	virtual void renderProfilerPanel(ProfilerPanel& profilerPanel, float lastTotalFrameTimeMs) = 0;
 
 	// Tells the main app whether to use Depth Testing, 3D Camera, etc.
 	virtual bool is3D() const = 0;
