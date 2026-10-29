@@ -10,7 +10,7 @@ A 2D/3D physics engine and real-time interactive simulation environment built wi
 <br><br>
 
 [![Watch this video](https://img.youtube.com/vi/2b2MA5n4yg0/maxresdefault.jpg)](https://www.youtube.com/watch?v=2b2MA5n4yg0)
-*3D Physics Demo (click to watch)*
+*3D Physics Demo, inspired by Rebug (click to watch)*
 
 ***
 
